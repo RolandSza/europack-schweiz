@@ -1,11 +1,19 @@
 /* ==========================================================================
    EUROPACK WORLD - SCHWEIZ B2B INTERAKTIONS-LOGIK (JAVASCRIPT)
+   Inklusive Live Shopware 6 Store-API Anbindung
    ========================================================================== */
 
-// 1. B2B Produktdatenbank mit Staffelpreisen & Beschreibungen
-const products = [
+// 1. SHOPWARE 6 API KONFIGURATION
+// Ersetze diese URL mit eurer tatsächlichen Shopware-Domain (OHNE Schrägstrich am Ende!)
+const SHOPWARE_URL = 'https://www.europack-world.com/'; 
+const ACCESS_KEY = 'SWSCDXHJB1GZV08XC013QMWZZQ';
+
+let products = []; // Wird dynamisch via API befüllt
+
+// Fallback-Produkte falls die API nicht erreichbar ist oder noch konfiguriert wird
+const fallbackProducts = [
   {
-    id: 1,
+    id: "fb-1",
     title: "Blockbodenbeutel Natur ohne Fenster",
     category: "beutel",
     badge: "B2B Bestpreis",
@@ -20,7 +28,7 @@ const products = [
     ]
   },
   {
-    id: 2,
+    id: "fb-2",
     title: "Geschenkkarton Schwarz Luxus",
     category: "kartons",
     badge: "Neuheit",
@@ -35,7 +43,7 @@ const products = [
     ]
   },
   {
-    id: 3,
+    id: "fb-3",
     title: "DHL / Post Versandkarton Wave 200x150x100mm",
     category: "kartons",
     badge: "Top Seller",
@@ -50,7 +58,7 @@ const products = [
     ]
   },
   {
-    id: 4,
+    id: "fb-4",
     title: "Flaschenverpackung 3er Set Extra Stark",
     category: "kartons",
     badge: "Geprüft",
@@ -62,66 +70,6 @@ const products = [
       { qty: "1 - 2 VPE", price: "CHF 22.00" },
       { qty: "3 - 9 VPE", price: "CHF 19.50" },
       { qty: "ab 10 VPE", price: "CHF 17.00" }
-    ]
-  },
-  {
-    id: 5,
-    title: "Lieferscheintaschen Ankunft / Enclosed C5",
-    category: "beutel",
-    badge: "Lagerware",
-    price: 15.80,
-    unit: "VPE 250 Stück",
-    image: "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&w=500&q=80",
-    description: "Selbstklebende Dokumententaschen in Signalfarbe Rot/Transparent. Wetterfest und hochhaftend.",
-    tiers: [
-      { qty: "1 - 3 VPE", price: "CHF 15.80" },
-      { qty: "4 - 9 VPE", price: "CHF 13.90" },
-      { qty: "ab 10 VPE", price: "CHF 11.50" }
-    ]
-  },
-  {
-    id: 6,
-    title: "Hand-Stretchfolie Transparent 23µm",
-    category: "kartons",
-    badge: "Industrie",
-    price: 48.00,
-    unit: "Karton (6 Rollen)",
-    image: "https://images.unsplash.com/photo-1607344645866-009c320c5ab8?auto=format&fit=crop&w=500&q=80",
-    description: "Extrem dehnbare Palettenfolie für optimale Ladungssicherung im Lager- und LKW-Transport.",
-    tiers: [
-      { qty: "1 - 2 Kartons", price: "CHF 48.00" },
-      { qty: "3 - 5 Kartons", price: "CHF 42.00" },
-      { qty: "ab 6 Kartons", price: "CHF 36.50" }
-    ]
-  },
-  {
-    id: 7,
-    title: "Bio-Takeaway Burgerbox Zuckerrohr",
-    category: "gastro",
-    badge: "Öko Standard",
-    price: 29.90,
-    unit: "VPE 100 Stück",
-    image: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=500&q=80",
-    description: "100% biologisch abbaubare Gastro-Menübox. Fettbeständig, mikrowellengeeignet und nachhaltig.",
-    tiers: [
-      { qty: "1 - 4 VPE", price: "CHF 29.90" },
-      { qty: "5 - 9 VPE", price: "CHF 26.00" },
-      { qty: "ab 10 VPE", price: "CHF 22.50" }
-    ]
-  },
-  {
-    id: 8,
-    title: "Nitril Einweg-Schutzhandschuhe Schwarz",
-    category: "hygiene",
-    badge: "EN 455",
-    price: 11.50,
-    unit: "Box (100 Stück)",
-    image: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=500&q=80",
-    description: "Puderfreie Nitrilhandschuhe für Medizin, Lebensmittelbereich und Reinigung Gewerbe.",
-    tiers: [
-      { qty: "1 - 9 Boxen", price: "CHF 11.50" },
-      { qty: "10 - 29 Boxen", price: "CHF 9.80" },
-      { qty: "ab 30 Boxen", price: "CHF 8.20" }
     ]
   }
 ];
@@ -138,39 +86,127 @@ const VAT_RATE = 0.081; // 8.1% USt Schweiz
 const STANDARD_SHIPPING_FEE = 9.90; // CHF
 
 // DOM-Elemente
-const productGrid = document.getElementById("productGrid");
-const cartDrawer = document.getElementById("cartDrawer");
-const wishlistDrawer = document.getElementById("wishlistDrawer");
-const cartOverlay = document.getElementById("cartOverlay");
+let productGrid, cartDrawer, wishlistDrawer, cartOverlay;
+let cartCountEl, wishlistCountEl, headerCartTotalEl;
+let subtotalExclText, vatText, shippingFeeText, grandTotalText;
+let shippingStatusText, shippingProgressFill;
+let searchInput, searchBtn, searchFilterInfo, searchQueryDisplay, clearSearchBtn;
 
-const cartCountEl = document.getElementById("cartCount");
-const wishlistCountEl = document.getElementById("wishlistCount");
-const headerCartTotalEl = document.getElementById("headerCartTotal");
-
-const subtotalExclText = document.getElementById("subtotalExclText");
-const vatText = document.getElementById("vatText");
-const shippingFeeText = document.getElementById("shippingFeeText");
-const grandTotalText = document.getElementById("grandTotalText");
-const shippingStatusText = document.getElementById("shippingStatusText");
-const shippingProgressFill = document.getElementById("shippingProgressFill");
-
-const searchInput = document.getElementById("searchInput");
-const searchBtn = document.getElementById("searchBtn");
-const searchFilterInfo = document.getElementById("searchFilterInfo");
-const searchQueryDisplay = document.getElementById("searchQueryDisplay");
-const clearSearchBtn = document.getElementById("clearSearchBtn");
-
-// Initialisierung
-document.addEventListener("DOMContentLoaded", () => {
-  renderProducts();
+// Initialisierung bei DOM-Load
+document.addEventListener("DOMContentLoaded", async () => {
+  initDOMElements();
   setupEventListeners();
+  
+  // Produkte aus Shopware laden
+  await loadShopwareProducts();
+  
   updateCartUI();
   updateWishlistUI();
 });
 
-// Toast Benachrichtigung anzeigen
+function initDOMElements() {
+  productGrid = document.getElementById("productGrid");
+  cartDrawer = document.getElementById("cartDrawer");
+  wishlistDrawer = document.getElementById("wishlistDrawer");
+  cartOverlay = document.getElementById("cartOverlay");
+
+  cartCountEl = document.getElementById("cartCount");
+  wishlistCountEl = document.getElementById("wishlistCount");
+  headerCartTotalEl = document.getElementById("headerCartTotal");
+
+  subtotalExclText = document.getElementById("subtotalExclText");
+  vatText = document.getElementById("vatText");
+  shippingFeeText = document.getElementById("shippingFeeText");
+  grandTotalText = document.getElementById("grandTotalText");
+  shippingStatusText = document.getElementById("shippingStatusText");
+  shippingProgressFill = document.getElementById("shippingProgressFill");
+
+  searchInput = document.getElementById("searchInput");
+  searchBtn = document.getElementById("searchBtn");
+  searchFilterInfo = document.getElementById("searchFilterInfo");
+  searchQueryDisplay = document.getElementById("searchQueryDisplay");
+  clearSearchBtn = document.getElementById("clearSearchBtn");
+}
+
+// 3. Shopware 6 API Abruf
+async function loadShopwareProducts() {
+  if (productGrid) {
+    productGrid.innerHTML = `
+      <div style="grid-column: 1/-1; text-align: center; padding: 60px; color: #4b5563;">
+        <i class="fa-solid fa-spinner fa-spin" style="font-size: 36px; margin-bottom: 12px; color: #dc2626;"></i>
+        <p style="font-weight: 600;">Lade B2B-Produkte direkt aus Shopware...</p>
+      </div>
+    `;
+  }
+
+  try {
+    const response = await fetch(`${SHOPWARE_URL}/store-api/product`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'sw-access-key': ACCESS_KEY
+      },
+      body: JSON.stringify({
+        limit: 24,
+        associations: {
+          cover: {},
+          categories: {}
+        }
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Shopware API HTTP Fehler: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    if (data.elements && data.elements.length > 0) {
+      products = data.elements.map(p => {
+        // Zuordnung der Kategorien
+        let cat = "kartons";
+        if (p.categories && p.categories.length > 0) {
+          const catName = p.categories[0].translated?.name?.toLowerCase() || "";
+          if (catName.includes("beutel") || catName.includes("sack")) cat = "beutel";
+          else if (catName.includes("gastro") || catName.includes("teller")) cat = "gastro";
+          else if (catName.includes("hygiene") || catName.includes("seife")) cat = "hygiene";
+        }
+
+        const unitPrice = p.calculatedPrice?.unitPrice || 0;
+
+        return {
+          id: p.id,
+          title: p.translated?.name || p.name || "Unbenanntes Produkt",
+          category: cat,
+          badge: p.markAsTopseller ? "Top Seller" : "B2B Qualität",
+          price: unitPrice,
+          unit: p.packUnit ? `VPE ${p.packUnit}` : "1 Stück",
+          image: p.cover?.media?.url || "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=500&q=80",
+          description: p.translated?.description?.replace(/<[^>]*>?/gm, '') || "Geprüfte Verpackungsqualität für den Schweizer B2B Fachhandel.",
+          tiers: [
+            { qty: "1 - 4 VPE", price: `CHF ${unitPrice.toFixed(2)}` },
+            { qty: "5 - 9 VPE", price: `CHF ${(unitPrice * 0.92).toFixed(2)}` },
+            { qty: "ab 10 VPE", price: `CHF ${(unitPrice * 0.85).toFixed(2)}` }
+          ]
+        };
+      });
+      console.log(`Erfolgreich ${products.length} Produkte aus Shopware 6 geladen.`);
+    } else {
+      console.warn("Keine Produkte im Shopware Verkaufskanal gefunden. Verwende Fallback-Daten.");
+      products = fallbackProducts;
+    }
+  } catch (err) {
+    console.warn("Fehler beim Abrufen der Shopware-API (Verbindung oder CORS). Verwende Fallback-Daten:", err);
+    products = fallbackProducts;
+  }
+
+  renderProducts();
+}
+
+// Toast Benachrichtigung
 function showToast(message, icon = "fa-circle-check") {
   const container = document.getElementById("toastContainer");
+  if (!container) return;
   const toast = document.createElement("div");
   toast.className = "toast";
   toast.innerHTML = `<i class="fa-solid ${icon}"></i> <span>${message}</span>`;
@@ -181,8 +217,9 @@ function showToast(message, icon = "fa-circle-check") {
   }, 3000);
 }
 
-// 3. Produkte Filtern & Rendern
+// 4. Produkte Filtern & Rendern
 function renderProducts() {
+  if (!productGrid) return;
   productGrid.innerHTML = "";
 
   let filtered = products.filter(p => {
@@ -209,13 +246,13 @@ function renderProducts() {
     card.className = "product-card";
     card.innerHTML = `
       <span class="badge-tag">${product.badge}</span>
-      <button class="wishlist-toggle-btn ${isWishlisted ? 'active' : ''}" onclick="toggleWishlist(${product.id})">
+      <button class="wishlist-toggle-btn ${isWishlisted ? 'active' : ''}" onclick="toggleWishlist('${product.id}')">
         <i class="fa-${isWishlisted ? 'solid' : 'regular'} fa-heart"></i>
       </button>
-      <div class="product-image-box" onclick="openProductDetail(${product.id})">
+      <div class="product-image-box" onclick="openProductDetail('${product.id}')">
         <img src="${product.image}" alt="${product.title}" class="product-image">
       </div>
-      <h3 class="product-title" onclick="openProductDetail(${product.id})">${product.title}</h3>
+      <h3 class="product-title" onclick="openProductDetail('${product.id}')">${product.title}</h3>
       <div class="product-meta">${product.unit}</div>
       <div class="product-price-box">
         <div class="price-chf">CHF ${product.price.toFixed(2)}</div>
@@ -223,7 +260,7 @@ function renderProducts() {
       </div>
       <div class="product-actions">
         <input type="number" value="1" min="1" class="qty-input" id="qty-${product.id}">
-        <button class="add-cart-btn" onclick="addToCart(${product.id})">
+        <button class="add-cart-btn" onclick="addToCart('${product.id}')">
           <i class="fa-solid fa-cart-plus"></i> In den Korb
         </button>
       </div>
@@ -232,11 +269,13 @@ function renderProducts() {
   });
 }
 
-// 4. Warenkorb Logik
+// 5. Warenkorb Logik
 window.addToCart = function(productId, customQty = null) {
   const qtyInput = document.getElementById(`qty-${productId}`);
   const qty = customQty || (qtyInput ? parseInt(qtyInput.value) : 1);
   const product = products.find(p => p.id === productId);
+
+  if (!product) return;
 
   const existing = cart.find(item => item.id === productId);
   if (existing) {
@@ -269,6 +308,8 @@ window.removeFromCart = function(productId) {
 };
 
 function updateCartUI() {
+  if (!cartCountEl) return;
+  
   const totalCount = cart.reduce((sum, item) => sum + item.quantity, 0);
   cartCountEl.textContent = totalCount;
 
@@ -283,62 +324,64 @@ function updateCartUI() {
   vatText.textContent = `CHF ${vatAmount.toFixed(2)}`;
   shippingFeeText.textContent = isFreeShipping ? "KOSTENFREI" : `CHF ${shippingFee.toFixed(2)}`;
   grandTotalText.textContent = `CHF ${grandTotal.toFixed(2)}`;
-  document.getElementById("checkoutFinalTotal").textContent = `CHF ${grandTotal.toFixed(2)}`;
+  
+  const finalTotalEl = document.getElementById("checkoutFinalTotal");
+  if (finalTotalEl) finalTotalEl.textContent = `CHF ${grandTotal.toFixed(2)}`;
 
-  // Fortschrittsbalken
-  if (subtotalExcl >= FREE_SHIPPING_LIMIT) {
-    shippingStatusText.innerHTML = `<i class="fa-solid fa-circle-check" style="color:#10b981;"></i> Gratulation! Ihre Lieferung ist <strong>versandkostenfrei</strong>!`;
-    shippingProgressFill.style.width = "100%";
-  } else {
-    const needed = FREE_SHIPPING_LIMIT - subtotalExcl;
-    const progressPercent = Math.min(100, (subtotalExcl / FREE_SHIPPING_LIMIT) * 100);
-    shippingStatusText.innerHTML = `Noch <strong>CHF ${needed.toFixed(2)}</strong> für kostenfreien Schweizer Versand!`;
-    shippingProgressFill.style.width = `${progressPercent}%`;
+  // Versandkosten-Fortschrittsbalken
+  if (shippingStatusText && shippingProgressFill) {
+    if (subtotalExcl >= FREE_SHIPPING_LIMIT) {
+      shippingStatusText.innerHTML = `<i class="fa-solid fa-circle-check" style="color:#10b981;"></i> Gratulation! Ihre Lieferung ist <strong>versandkostenfrei!</strong>`;
+      shippingProgressFill.style.width = "100%";
+      shippingProgressFill.style.background = "#10b981";
+    } else {
+      const remaining = FREE_SHIPPING_LIMIT - subtotalExcl;
+      const pct = Math.min(100, (subtotalExcl / FREE_SHIPPING_LIMIT) * 100);
+      shippingStatusText.innerHTML = `Noch <strong>CHF ${remaining.toFixed(2)}</strong> für kostenfreien Schweizer Versand!`;
+      shippingProgressFill.style.width = `${pct}%`;
+      shippingProgressFill.style.background = "#dc2626";
+    }
   }
 
-  // Warenkorb Liste Rendern
+  // Warenkorb Liste rendern
   const container = document.getElementById("cartItemsContainer");
-  container.innerHTML = "";
+  if (!container) return;
 
   if (cart.length === 0) {
     container.innerHTML = `
-      <div style="text-align: center; padding: 40px 0; color: #9ca3af;">
-        <i class="fa-solid fa-cart-flatbed" style="font-size: 40px; margin-bottom: 12px;"></i>
-        <p>Ihr Warenkorb ist aktuell leer.</p>
+      <div style="text-align:center; padding: 40px 20px; color:#6b7280;">
+        <i class="fa-solid fa-bag-shopping" style="font-size: 48px; margin-bottom: 12px; color: #cbd5e1;"></i>
+        <p style="font-size: 16px; font-weight:600;">Ihr Warenkorb ist noch leer</p>
+        <p style="font-size: 14px;">Wählen Sie Artikel aus unserem B2B-Katalog aus.</p>
       </div>
     `;
-    document.getElementById("checkoutBtn").disabled = true;
-    document.getElementById("checkoutBtn").style.opacity = "0.5";
-  } else {
-    document.getElementById("checkoutBtn").disabled = false;
-    document.getElementById("checkoutBtn").style.opacity = "1";
-
-    cart.forEach(item => {
-      const itemEl = document.createElement("div");
-      itemEl.className = "cart-item";
-      itemEl.innerHTML = `
-        <img src="${item.image}" class="cart-item-img">
-        <div class="cart-item-details">
-          <div class="cart-item-title">${item.title}</div>
-          <div class="cart-item-price">CHF ${(item.price * item.quantity).toFixed(2)}</div>
-          <div class="cart-item-controls">
-            <div class="qty-btn-group">
-              <button onclick="updateQuantity(${item.id}, -1)">-</button>
-              <span>${item.quantity}</span>
-              <button onclick="updateQuantity(${item.id}, 1)">+</button>
-            </div>
-            <button class="remove-item-btn" onclick="removeFromCart(${item.id})">
-              <i class="fa-regular fa-trash-can"></i> Entfernen
-            </button>
-          </div>
-        </div>
-      `;
-      container.appendChild(itemEl);
-    });
+    return;
   }
+
+  container.innerHTML = "";
+  cart.forEach(item => {
+    const row = document.createElement("div");
+    row.className = "cart-item";
+    row.innerHTML = `
+      <img src="${item.image}" alt="${item.title}" class="cart-item-img">
+      <div class="cart-item-details">
+        <h4>${item.title}</h4>
+        <div class="cart-item-price">CHF ${item.price.toFixed(2)} / VPE</div>
+        <div class="cart-item-controls">
+          <div class="qty-control">
+            <button onclick="updateQuantity('${item.id}', -1)">-</button>
+            <span>${item.quantity}</span>
+            <button onclick="updateQuantity('${item.id}', 1)">+</button>
+          </div>
+          <button class="remove-btn" onclick="removeFromCart('${item.id}')"><i class="fa-solid fa-trash-can"></i> Entfernen</button>
+        </div>
+      </div>
+    `;
+    container.appendChild(row);
+  });
 }
 
-// 5. Merkzettel Logik
+// 6. Merkzettel (Wishlist)
 window.toggleWishlist = function(productId) {
   const index = wishlist.indexOf(productId);
   if (index > -1) {
@@ -346,276 +389,257 @@ window.toggleWishlist = function(productId) {
     showToast("Vom Merkzettel entfernt", "fa-heart-crack");
   } else {
     wishlist.push(productId);
-    showToast("Auf dem Merkzettel gespeichert", "fa-heart");
+    showToast("Zum Merkzettel hinzugefügt", "fa-heart");
   }
   updateWishlistUI();
   renderProducts();
 };
 
 function updateWishlistUI() {
-  wishlistCountEl.textContent = wishlist.length;
+  if (wishlistCountEl) wishlistCountEl.textContent = wishlist.length;
   const container = document.getElementById("wishlistItemsContainer");
-  container.innerHTML = "";
+  if (!container) return;
 
   if (wishlist.length === 0) {
     container.innerHTML = `
-      <div style="text-align: center; padding: 40px 0; color: #9ca3af;">
-        <i class="fa-regular fa-heart" style="font-size: 40px; margin-bottom: 12px;"></i>
-        <p>Keine gemerkten Artikel.</p>
+      <div style="text-align:center; padding: 40px 20px; color:#6b7280;">
+        <i class="fa-regular fa-heart" style="font-size: 48px; margin-bottom: 12px; color: #cbd5e1;"></i>
+        <p>Keine Artikel auf Ihrem Merkzettel.</p>
       </div>
     `;
     return;
   }
 
+  container.innerHTML = "";
   wishlist.forEach(id => {
     const item = products.find(p => p.id === id);
-    if (!item) return;
-    const el = document.createElement("div");
-    el.className = "cart-item";
-    el.innerHTML = `
-      <img src="${item.image}" class="cart-item-img">
-      <div class="cart-item-details">
-        <div class="cart-item-title">${item.title}</div>
-        <div class="cart-item-price">CHF ${item.price.toFixed(2)}</div>
-        <div class="cart-item-controls" style="margin-top:8px;">
-          <button class="btn btn-red" style="padding:4px 8px; font-size:11px;" onclick="addToCart(${item.id})">
-            <i class="fa-solid fa-cart-plus"></i> In Korb
-          </button>
-          <button class="remove-item-btn" onclick="toggleWishlist(${item.id})">Entfernen</button>
+    if (item) {
+      const row = document.createElement("div");
+      row.className = "cart-item";
+      row.innerHTML = `
+        <img src="${item.image}" alt="${item.title}" class="cart-item-img">
+        <div class="cart-item-details">
+          <h4>${item.title}</h4>
+          <div class="cart-item-price">CHF ${item.price.toFixed(2)}</div>
+          <button class="add-cart-btn" style="padding: 4px 8px; font-size:12px; margin-top:5px;" onclick="addToCart('${item.id}')">In den Korb</button>
         </div>
-      </div>
-    `;
-    container.appendChild(el);
+      `;
+      container.appendChild(row);
+    }
   });
 }
 
-// 6. Produkt Detail Modal
+// 7. Produktdetail Modal
 window.openProductDetail = function(productId) {
   const product = products.find(p => p.id === productId);
   if (!product) return;
 
   const content = document.getElementById("productDetailContent");
-  let tiersHTML = product.tiers.map(t => `<tr><td>${t.qty}</td><td><strong>${t.price}</strong></td></tr>`).join('');
+  if (!content) return;
 
   content.innerHTML = `
-    <div>
-      <img src="${product.image}" class="detail-img" alt="${product.title}">
+    <div class="detail-img-box">
+      <img src="${product.image}" alt="${product.title}">
     </div>
-    <div>
-      <span class="badge-tag" style="position:static; display:inline-block; margin-bottom:8px;">${product.badge}</span>
+    <div class="detail-info-box">
+      <span class="badge-tag" style="position:static; display:inline-block; margin-bottom:10px;">${product.badge}</span>
       <h2>${product.title}</h2>
-      <p style="color:#6b7280; font-size:13px; margin-bottom:12px;">${product.unit}</p>
-      <p style="font-size:14px; margin-bottom:16px;">${product.description}</p>
+      <p class="detail-unit">${product.unit} | Art.-Nr.: EP-CH-${product.id}</p>
+      <div class="price-chf" style="font-size:28px; margin: 15px 0;">CHF ${product.price.toFixed(2)} <span style="font-size:14px; font-weight:normal; color:#6b7280;">exkl. MwSt.</span></div>
+      <p class="detail-desc">${product.description}</p>
       
-      <h4>Staffelpreise (exkl. MwSt.):</h4>
-      <table class="tier-table">
-        <thead><tr><th>Abnahme-Menge</th><th>Stückpreis</th></tr></thead>
-        <tbody>${tiersHTML}</tbody>
+      <h4>B2B Staffelpreise (ab Werk Schweiz):</h4>
+      <table class="tier-table" style="width:100%; border-collapse:collapse; margin:15px 0;">
+        <thead>
+          <tr style="border-bottom: 2px solid #e2e8f0; text-align:left;">
+            <th style="padding:8px;">Bestellmenge</th>
+            <th style="padding:8px;">Preis pro VPE</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${product.tiers.map(t => `<tr style="border-bottom:1px solid #f1f5f9;"><td style="padding:8px;">${t.qty}</td><td style="padding:8px; font-weight:bold; color:#dc2626;">${t.price}</td></tr>`).join('')}
+        </tbody>
       </table>
 
-      <div style="display:flex; gap:10px; margin-top:20px;">
-        <input type="number" id="detailQty" value="1" min="1" class="qty-input" style="width:70px;">
-        <button class="btn btn-red btn-block" onclick="addToCart(${product.id}, parseInt(document.getElementById('detailQty').value)); closeModals();">
-          <i class="fa-solid fa-cart-plus"></i> Jetzt bestellen
+      <div class="product-actions" style="margin-top:20px;">
+        <input type="number" value="1" min="1" class="qty-input" id="detailQtyInput">
+        <button class="add-cart-btn" onclick="addToCart('${product.id}', parseInt(document.getElementById('detailQtyInput').value))">
+          <i class="fa-solid fa-cart-plus"></i> In den Warenkorb
         </button>
       </div>
     </div>
   `;
 
-  document.getElementById("productDetailModal").classList.add("active");
+  openModal("productDetailModal");
 };
 
-// 7. Info- / Rechtliche Seiten Modal Renderer
-function openInfoModal(pageKey) {
-  const contentEl = document.getElementById("infoModalContent");
-  
-  const pages = {
-    impressum: `
-      <h2>Impressum</h2>
-      <p><strong>EP Verpackungs GmbH</strong><br>Schweizer B2B Kundenservice & Vertrieb<br>Gewerbestrasse 18<br>8000 Zürich, Schweiz</p>
-      <h3>Kontakt</h3>
-      <p>Telefon: +41 0800 123 456<br>E-Mail: kontakt@europack-world.ch</p>
-      <h3>Handelsregister & UID</h3>
-      <p>Handelsregister-Nr: CH-100.3.012.345-6<br>UID / USt-ID: CHE-123.456.789 MWST</p>
-    `,
-    datenschutz: `
-      <h2>Datenschutzerklärung</h2>
-      <p>Wir verarbeiten personenbezogene Daten unserer Schweizer B2B-Kunden streng nach den Vorgaben des Schweizer Datenschutzgesetzes (DSG) sowie der DSGVO.</p>
-      <h3>1. Datenerhebung</h3>
-      <p>Ihre Firmendaten werden ausschließlich zur Abwicklung von Bestellungen, Angeboten und Musteranforderungen verwendet.</p>
-    `,
-    versand: `
-      <h2>Versand- & Zahlungsbedingungen</h2>
-      <h3>Versand innerhalb der Schweiz</h3>
-      <p>• Standard-Lieferzeit: 24 bis 48 Stunden per Die Schweizerische Post oder LKW-Spedition.<br>• Versandkostenfrei ab <strong>CHF 150.00</strong> Netto-Bestellwert.<br>• Unter CHF 150.00 berechnen wir pauschal CHF 9.90 Versandkosten.</p>
-      <h3>Zahlungsarten für Gewerbekunden</h3>
-      <p>• Kauf auf Rechnung (30 Tage Zahlungsziel ab Rechnungsdatum)<br>• Kreditkarte (Visa, Mastercard)<br>• Vorkasse mit 2% Skonto-Abzug</p>
-    `,
-    kontakt: `
-      <h2>Kontakt & B2B-Beratung</h2>
-      <p>Haben Sie Fragen zu Ihrer Bestellung, individuellen Formaten oder Großabnahmen?</p>
-      <p><strong>Kundenservice:</strong> Mo–Fr, 08:00 – 17:00 Uhr<br><strong>Telefon:</strong> +41 0800 123 456<br><strong>E-Mail:</strong> einkauf@europack-world.ch</p>
-    `
-  };
-
-  contentEl.innerHTML = pages[pageKey] || `<h2>Information</h2><p>Inhalt wird geladen...</p>`;
-  document.getElementById("infoModal").classList.add("active");
-}
-
-// All Modals Schließen
-function closeModals() {
-  document.querySelectorAll(".modal-overlay").forEach(m => m.classList.remove("active"));
-  closeCartDrawer();
-  closeWishlistDrawer();
-}
-
-function openCartDrawer() {
-  cartDrawer.classList.add("active");
-  cartOverlay.classList.add("active");
-}
-function closeCartDrawer() {
-  cartDrawer.classList.remove("active");
-  cartOverlay.classList.remove("active");
-}
-
-function openWishlistDrawer() {
-  wishlistDrawer.classList.add("active");
-  cartOverlay.classList.add("active");
-}
-function closeWishlistDrawer() {
-  wishlistDrawer.classList.remove("active");
-  cartOverlay.classList.remove("active");
-}
-
-// 8. Event Listener Registrierung
+// 8. Event Listeners & Modals Navigation
 function setupEventListeners() {
-  // Navigation & Filter
-  document.querySelectorAll(".nav-link, .pill, .footer-category").forEach(el => {
-    el.addEventListener("click", (e) => {
-      e.preventDefault();
-      const cat = el.getAttribute("data-category") || el.getAttribute("data-filter") || el.getAttribute("data-cat");
-      currentFilter = cat;
+  // Drawer Toggles
+  document.getElementById("openCartBtn")?.addEventListener("click", openCartDrawer);
+  document.getElementById("closeCartBtn")?.addEventListener("click", closeCartDrawer);
+  document.getElementById("cartOverlay")?.addEventListener("click", closeCartDrawer);
 
-      document.querySelectorAll(".nav-link").forEach(nl => nl.classList.remove("active"));
-      document.querySelectorAll(".pill").forEach(pl => pl.classList.remove("active"));
+  document.getElementById("openWishlistBtn")?.addEventListener("click", () => {
+    wishlistDrawer.classList.add("active");
+    cartOverlay.classList.add("active");
+  });
+  document.getElementById("closeWishlistBtn")?.addEventListener("click", closeWishlistDrawer);
 
-      const matchPill = document.querySelector(`.pill[data-filter="${cat}"]`);
-      if (matchPill) matchPill.classList.add("active");
+  // Modal Triggers
+  document.getElementById("openLoginBtn")?.addEventListener("click", () => openModal("loginModal"));
+  document.getElementById("closeLoginModalBtn")?.addEventListener("click", () => closeModal("loginModal"));
 
+  document.getElementById("openSampleModalBtn")?.addEventListener("click", () => openModal("sampleModal"));
+  document.getElementById("floatingMusterBtn")?.addEventListener("click", () => openModal("sampleModal"));
+  document.getElementById("closeSampleModalBtn")?.addEventListener("click", () => closeModal("sampleModal"));
+
+  document.getElementById("heroCatalogBtn")?.addEventListener("click", () => openModal("catalogModal"));
+  document.getElementById("closeCatalogModalBtn")?.addEventListener("click", () => closeModal("catalogModal"));
+
+  document.getElementById("openInquiryBtn")?.addEventListener("click", () => openModal("inquiryModal"));
+  document.getElementById("closeInquiryModalBtn")?.addEventListener("click", () => closeModal("inquiryModal"));
+
+  document.getElementById("checkoutBtn")?.addEventListener("click", () => {
+    if (cart.length === 0) {
+      showToast("Ihr Warenkorb ist leer!", "fa-triangle-exclamation");
+      return;
+    }
+    closeCartDrawer();
+    openModal("checkoutModal");
+  });
+  document.getElementById("closeCheckoutModalBtn")?.addEventListener("click", () => closeModal("checkoutModal"));
+  document.getElementById("closeDetailModalBtn")?.addEventListener("click", () => closeModal("productDetailModal"));
+
+  // Form Submit Handler
+  document.getElementById("loginForm")?.addEventListener("submit", (e) => {
+    e.preventDefault();
+    currentUser = document.getElementById("loginEmail").value;
+    document.getElementById("loginText").textContent = "Konto AG";
+    closeModal("loginModal");
+    showToast("Erfolgreich als B2B-Kunde angemeldet");
+  });
+
+  document.getElementById("sampleForm")?.addEventListener("submit", (e) => {
+    e.preventDefault();
+    closeModal("sampleModal");
+    showToast("Musteranforderung erfolgreich versendet!");
+  });
+
+  document.getElementById("catalogForm")?.addEventListener("submit", (e) => {
+    e.preventDefault();
+    closeModal("catalogModal");
+    showToast("Katalog 2026 wurde per E-Mail versendet!");
+  });
+
+  document.getElementById("inquiryForm")?.addEventListener("submit", (e) => {
+    e.preventDefault();
+    closeModal("inquiryModal");
+    showToast("Sonderanfrage eingegangen. Wir melden uns!");
+  });
+
+  document.getElementById("checkoutForm")?.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const company = document.getElementById("coCompany").value;
+    const city = document.getElementById("coCity").value;
+    
+    closeModal("checkoutModal");
+    
+    const summaryBox = document.getElementById("successOrderSummary");
+    if (summaryBox) {
+      summaryBox.innerHTML = `
+        <p><strong>Empfänger:</strong> ${company} (${city})</p>
+        <p><strong>Zahlungsart:</strong> Kauf auf Rechnung (30 Tage)</p>
+        <p><strong>Auftragsnummer:</strong> EP-CH-2026-${Math.floor(10000 + Math.random() * 90000)}</p>
+      `;
+    }
+    
+    cart = [];
+    updateCartUI();
+    openModal("successModal");
+  });
+
+  document.getElementById("closeSuccessBtn")?.addEventListener("click", () => closeModal("successModal"));
+
+  // Filter Buttons
+  document.querySelectorAll(".pill").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      document.querySelectorAll(".pill").forEach(b => b.classList.remove("active"));
+      e.target.classList.add("active");
+      currentFilter = e.target.getAttribute("data-filter");
       renderProducts();
-      document.getElementById("products").scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+
+  // Main Nav Filter Links
+  document.querySelectorAll(".nav-link").forEach(link => {
+    link.addEventListener("click", (e) => {
+      e.preventDefault();
+      document.querySelectorAll(".nav-link").forEach(l => l.classList.remove("active"));
+      const target = e.currentTarget;
+      target.classList.add("active");
+      currentFilter = target.getAttribute("data-category");
+      renderProducts();
+      
+      const sec = document.getElementById("products");
+      if (sec) sec.scrollIntoView({ behavior: "smooth" });
     });
   });
 
   // Suche
-  const executeSearch = () => {
-    searchQuery = searchInput.value.trim();
-    if (searchQuery) {
-      searchFilterInfo.classList.remove("hidden");
-      searchQueryDisplay.textContent = searchQuery;
-    } else {
-      searchFilterInfo.classList.add("hidden");
-    }
-    renderProducts();
-  };
-
-  searchInput.addEventListener("input", executeSearch);
-  searchBtn.addEventListener("click", executeSearch);
-
-  clearSearchBtn.addEventListener("click", () => {
-    searchInput.value = "";
-    searchQuery = "";
-    searchFilterInfo.classList.add("hidden");
-    renderProducts();
-  });
-
-  // Drawers
-  document.getElementById("openCartBtn").addEventListener("click", openCartDrawer);
-  document.getElementById("closeCartBtn").addEventListener("click", closeCartDrawer);
-  document.getElementById("openWishlistBtn").addEventListener("click", openWishlistDrawer);
-  document.getElementById("closeWishlistBtn").addEventListener("click", closeWishlistDrawer);
-  cartOverlay.addEventListener("click", closeModals);
-
-  // Formular-Modals Öffnen
-  document.getElementById("openLoginBtn").addEventListener("click", () => document.getElementById("loginModal").classList.add("active"));
-  document.getElementById("openSampleModalBtn").addEventListener("click", () => document.getElementById("sampleModal").classList.add("active"));
-  document.getElementById("floatingMusterBtn").addEventListener("click", () => document.getElementById("sampleModal").classList.add("active"));
-  document.getElementById("heroCatalogBtn").addEventListener("click", () => document.getElementById("catalogModal").classList.add("active"));
-  document.getElementById("openInquiryBtn").addEventListener("click", () => document.getElementById("inquiryModal").classList.add("active"));
-
-  document.getElementById("heroShopBtn").addEventListener("click", () => {
-    document.getElementById("products").scrollIntoView({ behavior: 'smooth' });
-  });
-
-  // Close Buttons
-  document.querySelectorAll(".close-modal").forEach(btn => {
-    btn.addEventListener("click", closeModals);
-  });
-
-  // Footer Info Links
-  document.querySelectorAll(".info-link").forEach(link => {
-    link.addEventListener("click", (e) => {
-      e.preventDefault();
-      openInfoModal(link.getAttribute("data-page"));
+  if (searchBtn && searchInput) {
+    searchBtn.addEventListener("click", performSearch);
+    searchInput.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") performSearch();
     });
-  });
+  }
 
-  // Formular Submits
-  document.getElementById("loginForm").addEventListener("submit", (e) => {
-    e.preventDefault();
-    const email = document.getElementById("loginEmail").value;
-    currentUser = email.split('@')[0];
-    document.getElementById("loginText").textContent = currentUser;
-    showToast(`Willkommen zurück, ${currentUser}!`);
-    closeModals();
-  });
+  if (clearSearchBtn) {
+    clearSearchBtn.addEventListener("click", () => {
+      searchQuery = "";
+      if (searchInput) searchInput.value = "";
+      if (searchFilterInfo) searchFilterInfo.classList.add("hidden");
+      renderProducts();
+    });
+  }
+}
 
-  document.getElementById("sampleForm").addEventListener("submit", (e) => {
-    e.preventDefault();
-    showToast("Musteranfrage erfolgreich übermittelt!");
-    closeModals();
-  });
+function performSearch() {
+  if (!searchInput) return;
+  searchQuery = searchInput.value.trim();
+  if (searchQuery !== "") {
+    if (searchQueryDisplay) searchQueryDisplay.textContent = `"${searchQuery}"`;
+    if (searchFilterInfo) searchFilterInfo.classList.remove("hidden");
+  } else {
+    if (searchFilterInfo) searchFilterInfo.classList.add("hidden");
+  }
+  renderProducts();
+  const sec = document.getElementById("products");
+  if (sec) sec.scrollIntoView({ behavior: "smooth" });
+}
 
-  document.getElementById("catalogForm").addEventListener("submit", (e) => {
-    e.preventDefault();
-    showToast("Katalog 2026 wurde per E-Mail versendet!");
-    closeModals();
-  });
+// Modal Helpers
+function openModal(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.add("active");
+}
 
-  document.getElementById("inquiryForm").addEventListener("submit", (e) => {
-    e.preventDefault();
-    showToast("Anfrage übermittelt! Wir kontaktieren Sie in 24h.");
-    closeModals();
-  });
+function closeModal(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.remove("active");
+}
 
-  // Checkout
-  document.getElementById("checkoutBtn").addEventListener("click", () => {
-    if (cart.length === 0) return;
-    closeCartDrawer();
-    document.getElementById("checkoutModal").classList.add("active");
-  });
+function openCartDrawer() {
+  cartDrawer?.classList.add("active");
+  cartOverlay?.classList.add("active");
+}
 
-  document.getElementById("checkoutForm").addEventListener("submit", (e) => {
-    e.preventDefault();
-    const company = document.getElementById("coCompany").value;
-    const name = document.getElementById("coName").value;
-    const email = document.getElementById("coEmail").value;
-    const payment = document.querySelector('input[name="paymentMethod"]:checked').value;
-    const grandTotal = grandTotalText.textContent;
+function closeCartDrawer() {
+  cartDrawer?.classList.remove("active");
+  cartOverlay?.classList.remove("active");
+}
 
-    document.getElementById("successOrderSummary").innerHTML = `
-      <strong>Auftrags-Bestätigung (Schweiz):</strong><br>
-      • Kunde: ${company} (${name})<br>
-      • Rechnungs-E-Mail: ${email}<br>
-      • Zahlungsart: ${payment}<br>
-      • Rechnungsbetrag: <strong>${grandTotal}</strong> (inkl. 8.1% USt.)
-    `;
-
-    cart = [];
-    updateCartUI();
-    closeModals();
-    document.getElementById("successModal").classList.add("active");
-  });
-
-  document.getElementById("closeSuccessBtn").addEventListener("click", closeModals);
+function closeWishlistDrawer() {
+  wishlistDrawer?.classList.remove("active");
+  cartOverlay?.classList.remove("active");
 }
