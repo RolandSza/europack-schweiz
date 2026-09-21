@@ -5,7 +5,7 @@
 
 // 1. SHOPWARE 6 API KONFIGURATION
 // Ersetze diese URL mit eurer tatsächlichen Shopware-Domain (OHNE Schrägstrich am Ende!)
-const SHOPWARE_URL = 'https://www.europack-world.com/'; 
+const SHOPWARE_URL = 'https://www.europack-world.com'; 
 const ACCESS_KEY = 'SWSCDXHJB1GZV08XC013QMWZZQ';
 
 let products = []; // Wird dynamisch via API befüllt
