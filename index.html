@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>EUROPACK WORLD | B2B Verpackungslösungen Schweiz</title>
-  <link rel="stylesheet" href="style.css?v=1.1">
+  <link rel="stylesheet" href="style.css?v=1.2">
   <!-- Font Awesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <!-- Google Fonts -->
@@ -14,12 +14,15 @@
 </head>
 <body>
 
-  <!-- Top Announcement Bar -->
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Announcement Bar -->
   <div class="announcement-bar">
     <div class="container announcement-content">
       <span><i class="fa-solid fa-truck-fast"></i> Schweizer Versand kostenfrei ab <strong>CHF 150.-</strong></span>
       <span><i class="fa-solid fa-building"></i> B2B & Gewerbeservice: Kauf auf Rechnung | Staffelpreise</span>
-      <span class="announcement-phone"><i class="fa-solid fa-phone"></i> Kundenservice: +41 0800 123 456</span>
+      <span class="announcement-phone"><i class="fa-solid fa-phone"></i> Kundenservice: <a href="tel:+410800123456">+41 0800 123 456</a></span>
     </div>
   </div>
 
@@ -27,7 +30,7 @@
   <header class="site-header">
     <div class="container header-inner">
       <!-- Logo -->
-      <a href="#" class="logo-box">
+      <a href="#" class="logo-box" id="logoBtn">
         <div class="logo-badge">EURO</div>
         <div class="logo-sub">PACK</div>
       </a>
@@ -35,18 +38,21 @@
       <!-- Search Bar -->
       <div class="search-box">
         <input type="text" id="searchInput" placeholder="Suchbegriff, Kartongröße oder Artikelnummer...">
-        <button id="searchBtn"><i class="fa-solid fa-magnifying-glass"></i></button>
+        <button id="searchBtn" type="button"><i class="fa-solid fa-magnifying-glass"></i></button>
       </div>
 
       <!-- Header Actions -->
       <div class="header-actions">
-        <div class="header-action-item">
-          <i class="fa-regular fa-heart"></i>
+        <div class="header-action-item" id="openWishlistBtn">
+          <div class="icon-with-badge">
+            <i class="fa-regular fa-heart"></i>
+            <span class="badge" id="wishlistCount">0</span>
+          </div>
           <span>Merkzettel</span>
         </div>
-        <div class="header-action-item">
+        <div class="header-action-item" id="openLoginBtn">
           <i class="fa-regular fa-user"></i>
-          <span>B2B Login</span>
+          <span id="loginText">B2B Login</span>
         </div>
         <div class="header-action-item cart-btn" id="openCartBtn">
           <div class="cart-icon-wrapper">
@@ -66,13 +72,13 @@
   <nav class="main-nav">
     <div class="container nav-inner">
       <ul class="nav-links">
-        <li><a href="#" class="active"><i class="fa-solid fa-box"></i> Kartonagen & Versand</a></li>
-        <li><a href="#"><i class="fa-solid fa-box-open"></i> Beutel & Säcke</a></li>
-        <li><a href="#"><i class="fa-solid fa-utensils"></i> Gastro-Einweggeschirr</a></li>
-        <li><a href="#"><i class="fa-solid fa-pump-soap"></i> Hygieneartikel</a></li>
-        <li><a href="#" class="highlight"><i class="fa-solid fa-percent"></i> Angebote & Aktionen</a></li>
+        <li><a href="#" class="nav-link active" data-category="all"><i class="fa-solid fa-border-all"></i> Alle Artikel</a></li>
+        <li><a href="#" class="nav-link" data-category="kartons"><i class="fa-solid fa-box"></i> Kartonagen & Versand</a></li>
+        <li><a href="#" class="nav-link" data-category="beutel"><i class="fa-solid fa-box-open"></i> Beutel & Säcke</a></li>
+        <li><a href="#" class="nav-link" data-category="gastro"><i class="fa-solid fa-utensils"></i> Gastro-Einweggeschirr</a></li>
+        <li><a href="#" class="nav-link" data-category="hygiene"><i class="fa-solid fa-pump-soap"></i> Hygieneartikel</a></li>
       </ul>
-      <a href="#" class="sample-btn"><i class="fa-solid fa-cube"></i> Muster anfordern</a>
+      <button type="button" class="sample-btn" id="openSampleModalBtn"><i class="fa-solid fa-cube"></i> Muster anfordern</button>
     </div>
   </nav>
 
@@ -81,12 +87,12 @@
     <div class="container">
       <div class="hero-card">
         <div class="hero-content">
-          <span class="hero-tag">Direkt vom Hersteller & Lagerlager</span>
-          <h1>Schweizer B2B Fachhandel für Spezialverpackungen</h1>
-          <p>Erstklassige Industriequalität, schnelle Anlieferung in die gesamte Schweiz und persönliche Beratung für Ihr Unternehmen.</p>
+          <span class="hero-tag">Direkt vom B2B-Hersteller & Lager</span>
+          <h1>Schweizer Fachhandel für Verpackungslösungen</h1>
+          <p>Erstklassige Industriequalität, blitzschnelle Anlieferung in die gesamte Schweiz und persönliche Gewerbeberatung.</p>
           <div class="hero-buttons">
-            <a href="#products" class="btn btn-primary">Bestseller entdecken</a>
-            <a href="#" class="btn btn-secondary">Kataloge 2026 anfordern</a>
+            <button class="btn btn-primary" id="heroShopBtn"><i class="fa-solid fa-cart-shopping"></i> Bestseller entdecken</button>
+            <button class="btn btn-secondary" id="heroCatalogBtn"><i class="fa-solid fa-file-pdf"></i> Katalog 2026 anfordern</button>
           </div>
         </div>
       </div>
@@ -100,14 +106,14 @@
         <i class="fa-solid fa-shield-halved"></i>
         <div>
           <h4>Kauf auf Rechnung</h4>
-          <p>B2B Zahlungsziel für Firmen</p>
+          <p>30 Tage Zahlungsziel für Firmen</p>
         </div>
       </div>
       <div class="trust-item">
         <i class="fa-solid fa-truck-ramp-box"></i>
         <div>
           <h4>Blitzversand Schweiz</h4>
-          <p>Lieferung in 24–48 Std.</p>
+          <p>Lieferung in 24–48 Std. per Post/SBB</p>
         </div>
       </div>
       <div class="trust-item">
@@ -121,7 +127,7 @@
         <i class="fa-solid fa-headset"></i>
         <div>
           <h4>Persönlicher Support</h4>
-          <p>Kompetente Fachberatung</p>
+          <p>Fachkundige B2B-Kundenberatung</p>
         </div>
       </div>
     </div>
@@ -132,14 +138,22 @@
     <div class="container">
       <div class="section-header">
         <div>
-          <h2>Unsere Bestseller (CHF)</h2>
-          <p>Geprüfte Verpackungseinheiten für Gewerbe, Gastronomie & Versandhandel</p>
+          <h2 id="catalogTitle">Unsere Bestseller (CHF)</h2>
+          <p id="catalogSubtitle">Geprüfte Verpackungseinheiten für Gewerbe, Gastronomie & Versandhandel</p>
         </div>
         <div class="filter-pills">
           <button class="pill active" data-filter="all">Alle Produkte</button>
           <button class="pill" data-filter="kartons">Kartons & Boxen</button>
           <button class="pill" data-filter="beutel">Beutel & Säcke</button>
+          <button class="pill" data-filter="gastro">Gastro</button>
+          <button class="pill" data-filter="hygiene">Hygiene</button>
         </div>
+      </div>
+
+      <!-- Active Search Query Indicator -->
+      <div id="searchFilterInfo" class="search-info-bar hidden">
+        <span>Ergebnisse für: <strong id="searchQueryDisplay"></strong></span>
+        <button id="clearSearchBtn"><i class="fa-solid fa-xmark"></i> Suche zurücksetzen</button>
       </div>
 
       <div class="products-grid" id="productGrid">
@@ -154,11 +168,11 @@
       <div class="b2b-box">
         <div class="b2b-info">
           <h3>Sie benötigen maßgeschneiderte Sonderanfertigungen oder Bedruckung?</h3>
-          <p>Wir bedrucken Kartonagen, Klebebänder und Tragetaschen individuell mit Ihrem Firmenlogo.</p>
+          <p>Wir bedrucken Kartonagen, Klebebänder und Beutel individuell mit Ihrem Firmenlogo ab kleinen Stückzahlen.</p>
         </div>
         <div class="b2b-actions">
-          <a href="#" class="btn btn-white"><i class="fa-regular fa-envelope"></i> Anfrage senden</a>
-          <a href="#" class="btn btn-outline-white"><i class="fa-solid fa-phone"></i> +41 0800 123 456</a>
+          <button class="btn btn-white" id="openInquiryBtn"><i class="fa-regular fa-envelope"></i> Sonderanfrage senden</button>
+          <a href="tel:+410800123456" class="btn btn-outline-white"><i class="fa-solid fa-phone"></i> +41 0800 123 456</a>
         </div>
       </div>
     </div>
@@ -169,35 +183,35 @@
     <div class="container footer-grid">
       <div class="footer-col">
         <h3>EP Verpackungs GmbH</h3>
-        <p>Ihr zuverlässiger Großhändler für Verpackungsmaterialien, Gastronomiebedarf & Hygieneartikel in Europa und der Schweiz.</p>
+        <p>Ihr zuverlässiger Schweizer B2B Großhändler für Spezialverpackungsmaterialien, Gastronomiebedarf & Hygieneartikel.</p>
         <div class="social-links">
-          <a href="#"><i class="fa-brands fa-linkedin"></i></a>
-          <a href="#"><i class="fa-brands fa-facebook"></i></a>
-          <a href="#"><i class="fa-brands fa-instagram"></i></a>
+          <a href="#" class="social-link"><i class="fa-brands fa-linkedin"></i></a>
+          <a href="#" class="social-link"><i class="fa-brands fa-facebook"></i></a>
+          <a href="#" class="social-link"><i class="fa-brands fa-instagram"></i></a>
         </div>
       </div>
       <div class="footer-col">
         <h4>Kategorien</h4>
         <ul>
-          <li><a href="#">Kartonagen & Versand</a></li>
-          <li><a href="#">Beutel & Säcke</a></li>
-          <li><a href="#">Gastro-Einweggeschirr</a></li>
-          <li><a href="#">Hygieneartikel & Schutzbekleidung</a></li>
+          <li><a href="#" class="footer-category" data-cat="kartons">Kartonagen & Versand</a></li>
+          <li><a href="#" class="footer-category" data-cat="beutel">Beutel & Säcke</a></li>
+          <li><a href="#" class="footer-category" data-cat="gastro">Gastro-Einweggeschirr</a></li>
+          <li><a href="#" class="footer-category" data-cat="hygiene">Hygieneartikel</a></li>
         </ul>
       </div>
       <div class="footer-col">
         <h4>Service & Rechtliches</h4>
         <ul>
-          <li><a href="#">Kontakt & Beratung</a></li>
-          <li><a href="#">Versand- & Zahlungsbedingungen</a></li>
-          <li><a href="#">Impressum</a></li>
-          <li><a href="#">Datenschutz</a></li>
+          <li><a href="#" class="info-link" data-page="kontakt">Kontakt & Beratung</a></li>
+          <li><a href="#" class="info-link" data-page="versand">Versand- & Zahlungsbedingungen</a></li>
+          <li><a href="#" class="info-link" data-page="impressum">Impressum</a></li>
+          <li><a href="#" class="info-link" data-page="datenschutz">Datenschutz</a></li>
         </ul>
       </div>
       <div class="footer-col">
-        <h4>Zahlungsarten</h4>
+        <h4>Akzeptierte B2B Zahlungsarten</h4>
         <div class="payment-methods">
-          <span class="pay-badge"><i class="fa-solid fa-file-invoice-dollar"></i> Rechnung</span>
+          <span class="pay-badge"><i class="fa-solid fa-file-invoice-dollar"></i> Rechnung (30 Tage)</span>
           <span class="pay-badge"><i class="fa-brands fa-cc-visa"></i> Visa</span>
           <span class="pay-badge"><i class="fa-brands fa-cc-mastercard"></i> Mastercard</span>
           <span class="pay-badge"><i class="fa-brands fa-paypal"></i> PayPal</span>
@@ -207,12 +221,18 @@
     </div>
     <div class="footer-bottom">
       <div class="container">
-        <p>&copy; 2026 EP Verpackungs GmbH | Schweizer Online-Shop Prototyp</p>
+        <p>&copy; 2026 EP Verpackungs GmbH | EUROPACK WORLD Schweizer B2B Online-Shop</p>
       </div>
     </div>
   </footer>
 
-  <!-- Slide-Over Cart Drawer -->
+  <!-- Floating Global Muster Button -->
+  <button class="floating-muster-btn" id="floatingMusterBtn" type="button">
+    <i class="fa-solid fa-cube"></i>
+    <span>Muster anfordern</span>
+  </button>
+
+  <!-- Cart Slide-Over Drawer -->
   <div class="cart-overlay" id="cartOverlay"></div>
   <aside class="cart-drawer" id="cartDrawer">
     <div class="drawer-header">
@@ -220,7 +240,6 @@
       <button class="close-drawer" id="closeCartBtn">&times;</button>
     </div>
 
-    <!-- Free Shipping Progress -->
     <div class="shipping-progress-box">
       <div class="shipping-text" id="shippingStatusText">
         Noch <strong>CHF 150.00</strong> für kostenfreien Schweizer Versand!
@@ -230,9 +249,7 @@
       </div>
     </div>
 
-    <div class="drawer-body" id="cartItemsContainer">
-      <!-- Dynamisch gefüllt via JavaScript -->
-    </div>
+    <div class="drawer-body" id="cartItemsContainer"></div>
 
     <div class="drawer-footer">
       <div class="summary-line">
@@ -252,24 +269,221 @@
         <span id="grandTotalText">CHF 0.00</span>
       </div>
 
-      <button class="btn btn-primary btn-block checkout-btn" id="checkoutBtn">
-        <i class="fa-solid fa-lock"></i> Zur Kasse gehen
+      <button class="btn btn-red btn-block checkout-btn" id="checkoutBtn" type="button">
+        <i class="fa-solid fa-lock"></i> Zur B2B-Kasse gehen
       </button>
     </div>
   </aside>
 
-  <!-- Checkout Modal -->
-  <div class="modal-overlay" id="checkoutModal">
-    <div class="modal-card">
-      <button class="close-modal" id="closeModalBtn">&times;</button>
-      <div class="modal-icon"><i class="fa-solid fa-circle-check"></i></div>
-      <h2>Vielen Dank für Ihre Bestellung!</h2>
-      <p>Dies ist eine funktionstüchtige Schweizer Shop-Demonstration. Es wurden keine echten Zahlungen abgebucht.</p>
-      <div class="order-summary-box" id="modalOrderSummary"></div>
-      <button class="btn btn-primary btn-block" id="modalCloseAction">Zurück zum Shop</button>
+  <!-- Wishlist Drawer -->
+  <aside class="cart-drawer" id="wishlistDrawer">
+    <div class="drawer-header">
+      <h3><i class="fa-solid fa-heart"></i> Ihr Merkzettel</h3>
+      <button class="close-drawer" id="closeWishlistBtn">&times;</button>
+    </div>
+    <div class="drawer-body" id="wishlistItemsContainer"></div>
+  </aside>
+
+  <!-- Product Detail Modal -->
+  <div class="modal-overlay" id="productDetailModal">
+    <div class="modal-card modal-large">
+      <button class="close-modal" class="closeModalBtn">&times;</button>
+      <div class="product-detail-layout" id="productDetailContent"></div>
     </div>
   </div>
 
-  <script src="script.js?v=1.1"></script>
+  <!-- B2B Login Modal -->
+  <div class="modal-overlay" id="loginModal">
+    <div class="modal-card">
+      <button class="close-modal" id="closeLoginModalBtn">&times;</button>
+      <h2><i class="fa-solid fa-building-user"></i> B2B Firmen-Login</h2>
+      <p>Melden Sie sich an, um Kundenkonditionen einzusehen und auf Rechnung zu bestellen.</p>
+      <form id="loginForm" class="modal-form">
+        <div class="form-group">
+          <label>E-Mail-Adresse / B2B Kunden-ID</label>
+          <input type="email" id="loginEmail" placeholder="einkauf@firma.ch" required>
+        </div>
+        <div class="form-group">
+          <label>Passwort</label>
+          <input type="password" id="loginPassword" placeholder="••••••••" required>
+        </div>
+        <button type="submit" class="btn btn-red btn-block">Anmelden</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Muster Anfordern Modal -->
+  <div class="modal-overlay" id="sampleModal">
+    <div class="modal-card">
+      <button class="close-modal" id="closeSampleModalBtn">&times;</button>
+      <h2><i class="fa-solid fa-cube"></i> Kostenloses Musterpaket</h2>
+      <p>Wir senden qualifizierten Schweizer Unternehmen kostenfreie Materialproben zu.</p>
+      <form id="sampleForm" class="modal-form">
+        <div class="form-group">
+          <label>Firmenname *</label>
+          <input type="text" id="sampleCompany" placeholder="Muster AG" required>
+        </div>
+        <div class="form-group">
+          <label>Ansprechpartner *</label>
+          <input type="text" id="sampleContact" placeholder="Max Muster" required>
+        </div>
+        <div class="form-group">
+          <label>E-Mail-Adresse *</label>
+          <input type="email" id="sampleEmail" placeholder="einkauf@muster.ch" required>
+        </div>
+        <div class="form-group">
+          <label>Gewünschtes Produkt / Muster</label>
+          <select id="sampleProductSelect">
+            <option value="Blockbodenbeutel Natur">Blockbodenbeutel Natur</option>
+            <option value="DHL / Post Versandkarton Wave">DHL / Post Versandkarton Wave</option>
+            <option value="Flaschenverpackung Extra Stark">Flaschenverpackung Extra Stark</option>
+            <option value="Gastro-Spezialbeutel">Gastro-Spezialbeutel</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-red btn-block">Musterpaket kostenlos anfordern</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Katalog Anfordern Modal -->
+  <div class="modal-overlay" id="catalogModal">
+    <div class="modal-card">
+      <button class="close-modal" id="closeCatalogModalBtn">&times;</button>
+      <h2><i class="fa-solid fa-file-pdf"></i> Katalog 2026 anfordern</h2>
+      <p>Erhalten Sie unseren aktuellen Schweizer B2B-Hauptkatalog digital per E-Mail oder per Post.</p>
+      <form id="catalogForm" class="modal-form">
+        <div class="form-group">
+          <label>Firmenname *</label>
+          <input type="text" id="catalogCompany" placeholder="Firmenname" required>
+        </div>
+        <div class="form-group">
+          <label>E-Mail-Adresse für PDF-Download *</label>
+          <input type="email" id="catalogEmail" placeholder="info@unternehmen.ch" required>
+        </div>
+        <button type="submit" class="btn btn-red btn-block">Jetzt Katalog anfordern</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- B2B Sonderanfrage Modal -->
+  <div class="modal-overlay" id="inquiryModal">
+    <div class="modal-card">
+      <button class="close-modal" id="closeInquiryModalBtn">&times;</button>
+      <h2><i class="fa-solid fa-print"></i> Druck- & Sonderanfertigung</h2>
+      <p>Fordern Sie ein unverbindliches Angebot für individuell bedruckte Kartonagen an.</p>
+      <form id="inquiryForm" class="modal-form">
+        <div class="form-group">
+          <label>Firmenname *</label>
+          <input type="text" id="inquiryCompany" placeholder="Ihr Unternehmen" required>
+        </div>
+        <div class="form-group">
+          <label>E-Mail *</label>
+          <input type="email" id="inquiryEmail" placeholder="kontakt@firma.ch" required>
+        </div>
+        <div class="form-group">
+          <label>Gewünschte Menge (Stück)</label>
+          <input type="number" id="inquiryQty" min="100" placeholder="z. B. 1000" required>
+        </div>
+        <div class="form-group">
+          <label>Projektbeschreibung / Maße</label>
+          <textarea id="inquiryDetails" rows="3" placeholder="Geben Sie Maße, Druckfarben oder Wünsche an..." required></textarea>
+        </div>
+        <button type="submit" class="btn btn-red btn-block">Unverbindliches Angebot anfordern</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Content / Info Page Modal (Legal & Support Pages) -->
+  <div class="modal-overlay" id="infoModal">
+    <div class="modal-card modal-large">
+      <button class="close-modal" id="closeInfoModalBtn">&times;</button>
+      <div id="infoModalContent" class="info-content-body"></div>
+    </div>
+  </div>
+
+  <!-- Checkout Multi-Step Modal -->
+  <div class="modal-overlay" id="checkoutModal">
+    <div class="modal-card modal-large">
+      <button class="close-modal" id="closeCheckoutModalBtn">&times;</button>
+      <h2><i class="fa-solid fa-lock"></i> B2B Schweizer Kasse</h2>
+      <p>Gewerbliche Bestellung abschließen (Kauf auf Rechnung für Schweizer Firmen)</p>
+
+      <form id="checkoutForm" class="modal-form grid-form">
+        <div class="form-group col-span-2">
+          <h4>1. Rechnungs- & Lieferadresse</h4>
+        </div>
+        <div class="form-group">
+          <label>Firmenname *</label>
+          <input type="text" id="coCompany" placeholder="Firma AG" required>
+        </div>
+        <div class="form-group">
+          <label>UID / MwSt-Nummer (optional)</label>
+          <input type="text" id="coUid" placeholder="CHE-123.456.789 MWST">
+        </div>
+        <div class="form-group">
+          <label>Vor- & Nachname *</label>
+          <input type="text" id="coName" placeholder="Max Muster" required>
+        </div>
+        <div class="form-group">
+          <label>E-Mail-Adresse für Rechnung *</label>
+          <input type="email" id="coEmail" placeholder="buchhaltung@firma.ch" required>
+        </div>
+        <div class="form-group col-span-2">
+          <label>Strasse & Hausnummer *</label>
+          <input type="text" id="coStreet" placeholder="Gewerbestrasse 12" required>
+        </div>
+        <div class="form-group">
+          <label>PLZ *</label>
+          <input type="text" id="coZip" placeholder="8000" required>
+        </div>
+        <div class="form-group">
+          <label>Ort *</label>
+          <input type="text" id="coCity" placeholder="Zürich" required>
+        </div>
+
+        <div class="form-group col-span-2">
+          <h4>2. B2B Zahlungsart wählen</h4>
+          <div class="payment-options">
+            <label class="payment-radio">
+              <input type="radio" name="paymentMethod" value="Kauf auf Rechnung (30 Tage)" checked>
+              <span><i class="fa-solid fa-file-invoice-dollar"></i> Kauf auf Rechnung (30 Tage)</span>
+            </label>
+            <label class="payment-radio">
+              <input type="radio" name="paymentMethod" value="Kreditkarte (Visa/Mastercard)">
+              <span><i class="fa-brands fa-cc-visa"></i> Kreditkarte (Visa / Mastercard)</span>
+            </label>
+            <label class="payment-radio">
+              <input type="radio" name="paymentMethod" value="Vorkasse mit 2% Skonto">
+              <span><i class="fa-solid fa-building-columns"></i> Vorkasse (2% Skonto)</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group col-span-2 order-summary-checkout">
+          <div class="summary-line">
+            <span>Zu zahlender Endbetrag (inkl. 8.1% MwSt.):</span>
+            <strong id="checkoutFinalTotal" class="price-chf">CHF 0.00</strong>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-red btn-block col-span-2" style="padding: 16px; font-size: 16px;">
+          <i class="fa-solid fa-check"></i> Kostenpflichtig bestellen
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Order Success Modal -->
+  <div class="modal-overlay" id="successModal">
+    <div class="modal-card">
+      <div class="modal-icon"><i class="fa-solid fa-circle-check"></i></div>
+      <h2>Bestellung erfolgreich eingegangen!</h2>
+      <p>Vielen Dank für Ihren Auftrag. Eine Bestätigungs-E-Mail und die Rechnung wurden versendet.</p>
+      <div class="order-summary-box" id="successOrderSummary"></div>
+      <button class="btn btn-primary btn-block" id="closeSuccessBtn">Zurück zum Shop</button>
+    </div>
+  </div>
+
+  <script src="script.js?v=1.2"></script>
 </body>
 </html>
