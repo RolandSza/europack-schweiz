@@ -3,37 +3,41 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>EUROPACK WORLD | Schweiz Shop</title>
+  <title>EUROPACK WORLD | Verpackungen & Gewerbebedarf Schweiz</title>
   <link rel="stylesheet" href="style.css">
-  <!-- Google Fonts & FontAwesome Icons -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 </head>
 <body>
 
-  <!-- Top Announcement Bar -->
+  <!-- 1. Top Announcement Bar -->
   <div class="top-bar">
-    <span>Kostenlose Lieferung in die Schweiz ab CHF 150.- | Expressversand verfügbar</span>
+    <div class="container top-bar-content">
+      <span>🇨🇭 Schweizer Shop | Portofrei ab CHF 150.- Nettowarenwert | Schnelle Lieferung</span>
+      <div class="top-bar-links">
+        <a href="tel:+43724521591">Kundenservice: +43 7245 21591</a>
+      </div>
+    </div>
   </div>
 
-  <!-- Header / Navigation -->
+  <!-- 2. Main Header -->
   <header class="main-header">
     <div class="container header-content">
       <div class="logo">
         <a href="#">
           <span class="logo-bold">EUROPACK</span><span class="logo-red">WORLD</span>
-          <span class="flag-icon">🇨🇭</span>
         </a>
       </div>
 
       <div class="search-bar">
-        <input type="text" placeholder="Verpackungen, Kartons, Beutel suchen...">
-        <button type="submit"><i class="fas fa-search"></i> Suchen</button>
+        <input type="text" placeholder="Kartons, Beutel, Gastrobedarf, Klebebänder suchen...">
+        <button type="submit">Suchen</button>
       </div>
 
       <div class="header-actions">
-        <a href="#" class="action-btn"><i class="far fa-user"></i> <span>Konto</span></a>
-        <button id="cart-btn" class="action-btn cart-btn">
+        <a href="#" class="action-item"><i class="far fa-user"></i> <span>Konto</span></a>
+        <a href="#" class="action-item"><i class="far fa-heart"></i> <span>Merkzettel</span></a>
+        <button id="cart-btn" class="action-item cart-trigger">
           <i class="fas fa-shopping-bag"></i> 
           <span>Warenkorb</span>
           <span id="cart-count" class="badge">0</span>
@@ -42,42 +46,60 @@
     </div>
   </header>
 
-  <!-- Categories Sub-Header -->
+  <!-- 3. Category Navigation -->
   <nav class="category-nav">
     <div class="container">
-      <ul>
-        <li><a href="#" class="active">Alle Produkte</a></li>
-        <li><a href="#">Geschenkverpackungen</a></li>
-        <li><a href="#">Versandkartons</a></li>
-        <li><a href="#">Standbodenbeutel</a></li>
-        <li><a href="#">Flaschenverpackungen</a></li>
+      <ul class="nav-list">
+        <li><button class="nav-btn active" data-category="all">Alle Produkte</button></li>
+        <li><button class="nav-btn" data-category="kartons">Versandkartons</button></li>
+        <li><button class="nav-btn" data-category="beutel">Beutel & Folien</button></li>
+        <li><button class="nav-btn" data-category="gastro">Gastro & Einweg</button></li>
+        <li><button class="nav-btn" data-category="hygiene">Hygiene & Zubehör</button></li>
       </ul>
     </div>
   </nav>
 
-  <!-- Hero Banner -->
+  <!-- 4. Hero Banner -->
   <section class="hero-banner">
     <div class="container hero-content">
-      <h1>Premium Verpackungslösungen für die Schweiz</h1>
-      <p>Direkt vom Hersteller. Schnell, nachhaltig & individuell bedruckbar.</p>
-      <a href="#products" class="btn-primary">Jetzt Entdecken</a>
+      <h1>Großhandel für Verpackung, Gastro & Hygiene</h1>
+      <p>Erstklassige Gewerbelösungen direkt vom Hersteller. Alle Preise in CHF.</p>
+      <a href="#products" class="btn-hero">Sortiment Entdecken</a>
     </div>
   </section>
 
-  <!-- Contact Box Component (Red Frame Design) -->
+  <!-- 5. Trust Badges -->
+  <section class="trust-bar">
+    <div class="container trust-grid">
+      <div class="trust-item">
+        <strong>Direkt vom Hersteller</strong>
+        <span>Hohe Lagerverfügbarkeit & Top-Preise</span>
+      </div>
+      <div class="trust-item">
+        <strong>Schweizer Versand</strong>
+        <span>Kostenfrei ab CHF 150.-</span>
+      </div>
+      <div class="trust-item">
+        <strong>B2B & Gewerbeservice</strong>
+        <span>Kauf auf Rechnung & Mengenrabatte</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. Original Contact Box Component -->
   <section class="container margin-top">
     <div class="contact-box">
       <div class="contact-title">Sie haben Fragen?</div>
       <div class="contact-links">
-        <a href="mailto:info@europack-world.com" class="contact-item">
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#d80027" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <a href="mailto:office@europack-world.com" class="contact-item">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#d80027" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <rect x="2" y="4" width="20" height="16" rx="2"></rect>
             <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
           </svg>
           <span>Schreiben Sie uns</span>
         </a>
-        <a href="tel:+41000000000" class="contact-item">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="#d80027">
+        <a href="tel:+43724521591" class="contact-item">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="#d80027">
             <path d="M6.62 10.79a15.053 15.053 0 006.59 6.59l2.2-2.2a1 1 0 011.11-.27c1.21.49 2.53.76 3.88.76a1 1 0 011 1V20a1 1 0 01-1 1C10.07 21 3 13.93 3 5a1 1 0 011-1h3.5a1 1 0 011 1c0 1.35.27 2.67.76 3.88a1 1 0 01-.27 1.11l-2.37 2.37z"></path>
           </svg>
           <span>Rufen Sie uns an</span>
@@ -86,19 +108,26 @@
     </div>
   </section>
 
-  <!-- Main Product Section -->
+  <!-- 7. Product Catalog -->
   <main class="container margin-top" id="products">
-    <h2 class="section-title">Beliebte Verpackungen (CHF)</h2>
-    <div id="product-grid" class="product-grid">
-      <!-- Dynamic Products injected by script.js -->
+    <div class="catalog-header">
+      <h2 class="section-title">Unsere Bestseller (CHF)</h2>
+      <span class="catalog-subtitle">Verpackungseinheiten für Gewerbe & Versandhandel</span>
     </div>
+    <div id="product-grid" class="product-grid"></div>
   </main>
 
-  <!-- Slide-Over Cart Drawer -->
+  <!-- 8. Slide-Over Cart Drawer with Shipping Progress -->
   <div id="cart-drawer" class="cart-drawer">
     <div class="cart-header">
-      <h3>Ihr Warenkorb (CHF)</h3>
+      <h3>Warenkorb (CHF)</h3>
       <button id="close-cart" class="close-btn">&times;</button>
+    </div>
+    <div class="shipping-progress-container">
+      <div id="shipping-text" class="shipping-text">Noch CHF 150.00 bis zum kostenlosen Versand!</div>
+      <div class="progress-bar-bg">
+        <div id="progress-fill" class="progress-bar-fill" style="width: 0%;"></div>
+      </div>
     </div>
     <div id="cart-items" class="cart-items">
       <p class="empty-msg">Ihr Warenkorb ist noch leer.</p>
@@ -112,6 +141,37 @@
     </div>
   </div>
   <div id="cart-overlay" class="cart-overlay"></div>
+
+  <!-- 9. Footer -->
+  <footer class="main-footer margin-top">
+    <div class="container footer-grid">
+      <div>
+        <h4>EP Verpackungs GmbH</h4>
+        <p>Ihr zuverlässiger Großhändler für Verpackungen, Gastronomie- & Hygienebedarf in Europa und der Schweiz.</p>
+      </div>
+      <div>
+        <h4>Kategorien</h4>
+        <ul>
+          <li><a href="#">Kartonagen & Versand</a></li>
+          <li><a href="#">Beutel & Säcke</a></li>
+          <li><a href="#">Gastro-Einweggeschirr</a></li>
+          <li><a href="#">Hygieneartikel</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Service & Rechtliches</h4>
+        <ul>
+          <li><a href="#">Kontakt & Beratung</a></li>
+          <li><a href="#">Versand- & Zahlungsbedingungen</a></li>
+          <li><a href="#">Impressum</a></li>
+          <li><a href="#">Datenschutz</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="container">&copy; 2026 EP Verpackungs GmbH | Schweizer Online-Shop Prototyp</div>
+    </div>
+  </footer>
 
   <script src="script.js"></script>
 </body>
